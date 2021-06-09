@@ -40,7 +40,7 @@ function instaOpen(){
 		chrome.tabs.sendMessage(tabs[0].id, { text: "InstaSrcOpener" }, function (response) {
 			for(var i=0;i<response.url.length;i++){
 				//window.alert(response.url[i]);
-				if(!response.url[i].startsWith("blob:")){//blob:で始まる奴は未対応
+				if(response.url[i].length>0 && !response.url[i].startsWith("blob:")){//blob:で始まる奴は未対応
 					chrome.tabs.create({url: response.url[i]});
 				}
 			}
