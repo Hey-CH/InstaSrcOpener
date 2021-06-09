@@ -2,18 +2,18 @@
 	if (request.text == "InstaSrcOpener") {
 		var art=getPresentationArticle();
 		if(art){
-			//videoの場合は1個だけ
+			//ulがある場合、その中のvideo要素のsrc属性とimg要素のsrcset要素の最後の奴（,で区切った後 で区切り、最初の物がURL）
+			var srcs=new Array();
+			srcs=serarchFirstUlSrc(art,srcs);
+			if(srcs.length>0){
+				//srcs=searchNextSrc(srcs);//機能しないのでコメント
+				sendResponse({ "url": srcs });
+			}
+			
+			//videoの場合（1個だけ）
 			var video=art.getElementsByTagName("video");
 			if(video.length>0){
 				sendResponse({ "url": [video[0].getAttribute("src")] });
-			}
-			
-			//ulがある場合、その中のimg要素のsrcset要素の最後の奴（,で区切った後 で区切り、最初の物がURL）
-			var srcs=new Array();
-			srcs=serarchFirstUlImg(art,srcs);
-			if(srcs.length>0){
-				//srcs=searchNextImg(srcs);//機能しないのでコメント
-				sendResponse({ "url": srcs });
 			}
 			
 			//videoでもul内のimgでもない場合、class="FFVAD"を持つ最初に出現する奴を返す
@@ -62,25 +62,26 @@ function get_6CZjiButton(){
 	}
 }
 
-function searchNextImg(arr){
+function searchNextSrc(arr){
 	var btn=get_6CZjiButton();
 	if(btn){
 		btn.click();
 		//クリック後の一連の処理の後↓を実行したいがダメぽ
-		arr=serarchFirstUlImg(arr);
-		arr=searchNextImg(arr);
+		arr=serarchFirstUlSrc(arr);
+		arr=searchNextSrc(arr);
 		//jQuery使えば行けるかと思ったけどだめだった。
 		//$(btn).trigger("click",function(){
-		//	arr=serarchFirstUlImg(arr);
-		//	arr=searchNextImg(arr);
+		//	arr=serarchFirstUlSrc(arr);
+		//	arr=searchNextSrc(arr);
 		//});
 	}
 	return arr;
 }
 
-function serarchFirstUlImg(art,arr){
+function serarchFirstUlSrc(art,arr){
 	var ul=art.getElementsByTagName("ul");
 	if(ul.length>0){
+		//img要素のsrc取得（srcset属性から抽出）
 		var ulimg=ul[0].getElementsByTagName("img");
 		if(ulimg.length>0){
 			for(var i=0;i<ulimg.length;i++){
@@ -92,6 +93,13 @@ function serarchFirstUlImg(art,arr){
 						arr.push(src);
 					}
 				}
+			}
+		}
+		//video要素のsrc取得（src属性そのまま）
+		var ulvideo=ul[0].getElementsByTagName("video");
+		if(ulvideo.length>0){
+			for(var i=0;i<ulvideo.length;i++){
+				arr.push(ulvideo[i].getAttribute("src"));
 			}
 		}
 	}

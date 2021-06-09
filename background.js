@@ -39,8 +39,12 @@ function instaOpen(){
 	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
 		chrome.tabs.sendMessage(tabs[0].id, { text: "InstaSrcOpener" }, function (response) {
 			for(var i=0;i<response.url.length;i++){
-				//window.alert(response.url[i]);
-				if(response.url[i].length>0 && !response.url[i].startsWith("blob:")){//blob:で始まる奴は未対応
+				if(!response.url[i] || response.url[i].length<=0){
+					console.log("InstaSrcOpener:Could not get url.");
+				}else if(response.url[i].startsWith("blob:")){//blob:で始まる奴は未対応(対応できるかもしれないけど、未調査)
+					console.log("InstaSrcOpener:Could not open url.["+response.url[i]+"]");
+				}else{
+					console.log("InstaSrcOpener:Open url.["+response.url[i]+"]");
 					chrome.tabs.create({url: response.url[i]});
 				}
 			}
