@@ -1,9 +1,35 @@
-﻿chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+﻿var srcs=new Array();
+
+//ページを移動したらsrcsをリセット
+var lochref=document.location.href;
+setInterval(function(){
+	if(lochref!=document.location.href){
+		srcs=new Array();
+		lochref=document.location.href;
+	}
+},500);
+
+//role='presentation'のarticle要素がなくなったらsrcsをリセット
+$("body").click(function(){
+	if(!$("article[role='presentation']").length){
+		srcs=new Array();
+	}
+});
+//_6CZjiボタンを押した時に新しく表示されたsrcを取得
+$("body").on("click","button[class*='_6CZji']",function(){
+	setTimeout(function(){
+		var art=getPresentationArticle();
+		if(art){
+			srcs=serarchFirstUlSrc(art,srcs);
+		}
+	},500);
+});
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.text == "InstaSrcOpener") {
 		var art=getPresentationArticle();
 		if(art){
 			//ulがある場合、その中のvideo要素のsrc属性とimg要素のsrcset要素の最後の奴（,で区切った後 で区切り、最初の物がURL）
-			var srcs=new Array();
 			srcs=serarchFirstUlSrc(art,srcs);
 			if(srcs.length>0){
 				//srcs=searchNextSrc(srcs);//機能しないのでコメント
@@ -99,7 +125,10 @@ function serarchFirstUlSrc(art,arr){
 		var ulvideo=ul[0].getElementsByTagName("video");
 		if(ulvideo.length>0){
 			for(var i=0;i<ulvideo.length;i++){
-				arr.push(ulvideo[i].getAttribute("src"));
+				var src=ulvideo[i].getAttribute("src");
+				if(!arr.includes(src)){
+					arr.push(src);
+				}
 			}
 		}
 	}
