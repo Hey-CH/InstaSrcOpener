@@ -27,6 +27,11 @@ $("body").on("click","button[class*='_6CZji']",function(){
 
 chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	if (request.text == "InstaSrcOpener") {
+		if(isStories()){
+			srcs=new Array();
+			srcs.push(getCurrentStoriesSrc());
+			sendResponse({ "url": srcs });
+		}
 		var art=getPresentationArticle();
 		if(art){
 			//ulがある場合、その中のvideo要素のsrc属性とimg要素のsrcset要素の最後の奴（,で区切った後 で区切り、最初の物がURL）
@@ -60,6 +65,25 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 		sendResponse({ "url": [""] });
 	}
 });
+
+//class属性に「y-yJ5」を含む要素がある場合ストーリーズと判定します。
+function isStories(){
+	if($("*[class*='y-yJ5']").length){
+		return true;
+	}else{
+		return false;
+	}
+}
+//現在表示中のストリーズのsrcを返します
+function getCurrentStoriesSrc(){
+	if($("video[class*='y-yJ5']").length){//videoの場合
+		return $("video[class*='y-yJ5']:first").children("source").attr("src");
+	}else if($("img[class*='y-yJ5']").length){//imgの場合
+		return $("img[class*='y-yJ5']:first").attr("src");
+	}else{
+		return "";
+	}
+}
 
 //role属性値が「presentation」のarticle要素を返します
 function getPresentationArticle(){
