@@ -39,26 +39,30 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 			if(srcs.length>0){
 				//srcs=searchNextSrc(srcs);//機能しないのでコメント
 				sendResponse({ "url": srcs });
+				return;
 			}
 			
-			//videoの場合（1個だけ）
-			var video=art.getElementsByTagName("video");
-			if(video.length>0){
-				sendResponse({ "url": [video[0].getAttribute("src")] });
-			}
-			
-			//videoでもul内のimgでもない場合、class="FFVAD"を持つ最初に出現する奴を返す
-			var img=art.getElementsByTagName("img");
-			if(img.length>0){
-				for(var i=0;i<img.length;i++){
-					var c=img[i].getAttribute("class");
-					if(c=="FFVAD" && img[i].getAttribute("srcset")){
-						var srcset=img[i].getAttribute("srcset");
+			var bdivs=getDivButtonSrcElements(art);
+			if(bdivs.length>0){
+				for(var i=0;i<bdivs.length;i++){
+					if(bdivs[i].tagName=="IMG"){
+						var cls=bdivs[i].getAttribute("class");
+						if(cls!="FFVAD")continue;
+					}
+					/*srcsetから取得するの止めよう。（一番大きいのを調べないとダメだね）
+					if(bdivs[i].hasAttribute("srcset")){
+						var srcset=bdivs[i].getAttribute("srcset");
 						var sets=srcset.split(",");
 						var src=sets[sets.length-1].split(" ")[0];
-						sendResponse({ "url": [src] });
+						srcs.push(src);
+					} else {
+						srcs.push(bdivs[i].getAttribute("src"));
 					}
+					*/
+					srcs.push(bdivs[i].getAttribute("src"));
 				}
+				sendResponse({ "url": srcs });
+				return;
 			}
 		}
 		
@@ -129,23 +133,34 @@ function searchNextSrc(arr){
 }
 
 function serarchFirstUlSrc(art,arr){
+	var arr=[];
 	var ul=art.getElementsByTagName("ul");
 	if(ul.length>0){
 		//img要素のsrc取得（srcset属性から抽出）
-		var ulimg=ul[0].getElementsByTagName("img");
+		//var ulimg=ul[0].getElementsByTagName("img");
+		var ulimg=getDivButtonSrcElements(ul[0]);
 		if(ulimg.length>0){
 			for(var i=0;i<ulimg.length;i++){
+				//img要素の場合class="FFVAD"が無いと追加対象から外す
+				if(ulimg[i].tagName=="IMG"){
+					var cls=ulimg[i].getAttribute("class");
+					if(cls!="FFVAD")continue;
+				}
+				/*
 				var srcset=ulimg[i].getAttribute("srcset");
 				if(srcset){
 					var sets=srcset.split(",");
 					var src=sets[sets.length-1].split(" ")[0];
-					if(!arr.includes(src)){
-						arr.push(src);
-					}
+					if(!arr.includes(src))arr.push(src);
+				} else if(ulimg[i].getAttribute("src")){//srcsetが無い場合、普通にsrcから取得
+					arr.push(ulimg[i].getAttribute("src"));
 				}
+				*/
+				arr.push(ulimg[i].getAttribute("src"));
 			}
 		}
 		//video要素のsrc取得（src属性そのまま）
+		/*
 		var ulvideo=ul[0].getElementsByTagName("video");
 		if(ulvideo.length>0){
 			for(var i=0;i<ulvideo.length;i++){
@@ -155,6 +170,34 @@ function serarchFirstUlSrc(art,arr){
 				}
 			}
 		}
+		*/
+	}
+	return arr;
+}
+//parentの子孫にあるdiv role=button の子孫にあるsrc属性値を持つ要素を返します
+function getDivButtonSrcElements(ele){
+	var srceles=[];
+	var divs=ele.getElementsByTagName("div");
+	for(var i=0;i<divs.length;i++){
+		var role=divs[i].getAttribute("role");
+		if(role=="button"){
+			var des=getDescendants(divs[i]);
+			if(des.length>0){
+				for(var j=0;j<des.length;j++){
+					var src=des[j].getAttribute("src");
+					if(src)srceles.push(des[j]);
+				}
+			}
+		}
+	}
+	return srceles;
+}
+function getDescendants(ele){
+	var arr=[];
+	if(ele.children.length<=0)return arr;
+	for(var i=0;i<ele.children.length;i++){
+		arr.push(ele.children[i]);
+		arr=arr.concat(getDescendants(ele.children[i]));
 	}
 	return arr;
 }
