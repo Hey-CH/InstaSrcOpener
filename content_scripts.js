@@ -133,7 +133,6 @@ function searchNextSrc(arr){
 }
 
 function serarchFirstUlSrc(art,arr){
-	var arr=[];
 	var ul=art.getElementsByTagName("ul");
 	if(ul.length>0){
 		//img要素のsrc取得（srcset属性から抽出）
@@ -146,31 +145,9 @@ function serarchFirstUlSrc(art,arr){
 					var cls=ulimg[i].getAttribute("class");
 					if(cls!="FFVAD")continue;
 				}
-				/*
-				var srcset=ulimg[i].getAttribute("srcset");
-				if(srcset){
-					var sets=srcset.split(",");
-					var src=sets[sets.length-1].split(" ")[0];
-					if(!arr.includes(src))arr.push(src);
-				} else if(ulimg[i].getAttribute("src")){//srcsetが無い場合、普通にsrcから取得
-					arr.push(ulimg[i].getAttribute("src"));
-				}
-				*/
-				arr.push(ulimg[i].getAttribute("src"));
+				if(!arr.includes(ulimg[i].getAttribute("src")))arr.push(ulimg[i].getAttribute("src"));
 			}
 		}
-		//video要素のsrc取得（src属性そのまま）
-		/*
-		var ulvideo=ul[0].getElementsByTagName("video");
-		if(ulvideo.length>0){
-			for(var i=0;i<ulvideo.length;i++){
-				var src=ulvideo[i].getAttribute("src");
-				if(!arr.includes(src)){
-					arr.push(src);
-				}
-			}
-		}
-		*/
 	}
 	return arr;
 }
