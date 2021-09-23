@@ -59,7 +59,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 						srcs.push(bdivs[i].getAttribute("src"));
 					}
 					*/
-					srcs.push(bdivs[i].getAttribute("src"));
+					if(!srcs.includes(bdivs[i].getAttribute("src")))srcs.push(bdivs[i].getAttribute("src"));
 				}
 				sendResponse({ "url": srcs });
 				return;
