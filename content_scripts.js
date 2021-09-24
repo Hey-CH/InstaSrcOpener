@@ -42,7 +42,7 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 				return;
 			}
 			
-			var bdivs=getDivButtonSrcElements(art);
+			var bdivs=getDivButtonOrVideoSrcElements(art);
 			if(bdivs.length>0){
 				for(var i=0;i<bdivs.length;i++){
 					if(bdivs[i].tagName=="IMG"){
@@ -137,7 +137,7 @@ function serarchFirstUlSrc(art,arr){
 	if(ul.length>0){
 		//img要素のsrc取得（srcset属性から抽出）
 		//var ulimg=ul[0].getElementsByTagName("img");
-		var ulimg=getDivButtonSrcElements(ul[0]);
+		var ulimg=getDivButtonOrVideoSrcElements(ul[0]);
 		if(ulimg.length>0){
 			for(var i=0;i<ulimg.length;i++){
 				//img要素の場合class="FFVAD"が無いと追加対象から外す
@@ -152,7 +152,7 @@ function serarchFirstUlSrc(art,arr){
 	return arr;
 }
 //parentの子孫にあるdiv role=button の子孫にあるsrc属性値を持つ要素を返します
-function getDivButtonSrcElements(ele){
+function getDivButtonOrVideoSrcElements(ele){
 	var srceles=[];
 	var divs=ele.getElementsByTagName("div");
 	for(var i=0;i<divs.length;i++){
@@ -165,6 +165,13 @@ function getDivButtonSrcElements(ele){
 					if(src)srceles.push(des[j]);
 				}
 			}
+		}
+	}
+	var videos=ele.getElementsByTagName("video");
+	if(videos.length>0){
+		for(var i=0;i<videos.length;i++){
+			var src=videos[i].getAttribute("src");
+			if(src)srceles.push(videos[i]);
 		}
 	}
 	return srceles;
